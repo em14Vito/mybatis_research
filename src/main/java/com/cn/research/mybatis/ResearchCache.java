@@ -57,9 +57,15 @@ public class ResearchCache {
   public static void main(String[] args) {
 
     ResearchCache researchCache = new ResearchCache();
-    researchCache.testCacheWithSignleSqlSession();
 
-    researchCache.testMapperAndCache();
+    /**
+     * 结论: cache在一次sqlSession中(应该是一个事务中),是不会被插进cache里的(hashMap实现,所以不是线程安全)；
+     * 只有一个sqlSession Close之后，才会将查询的数据插入cache里；
+     */
+    researchCache.testCacheWithSignleSqlSession();
+    researchCache.testCacheWithOwnSqlSession();
+
+    //TODO 缓存查询: sqlSession 1:先查询,再更新(更新上次查询的数据); sqlSession 2: 单查询(条件跟1一样);
   }
 
 
@@ -68,7 +74,7 @@ public class ResearchCache {
    * 2. 可用来追踪cache缓存的源码:
    *    - 两次相同的查询，分别生成各种查询需要的sqlSession; in other words, sqlSession不共享
    */
-  public void testMapperAndCache(){
+  public void testCacheWithOwnSqlSession(){
 
     SqlSession sqlSession = null;
 
@@ -158,7 +164,7 @@ public class ResearchCache {
       busDOMapper dao = sqlSession.getMapper(busDOMapper.class);
       BusDO busDO = new BusDO();
       busDO.setBusName("asdasd");
-      busDO = dao.selectByPrimaryKey(1);
+      busDO = dao.selectByPrimaryKey(2);
       System.out.println("success" + busDO.getBusName());
     } catch (Exception e) {
       e.printStackTrace();
