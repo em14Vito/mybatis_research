@@ -24,6 +24,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 /**
  * 测试mapper的映射方法
@@ -38,7 +39,7 @@ public class ResearchCache {
 
   private static SqlSessionFactory sqlSessionFactory;
 
-  public ResearchCache(){
+  public ResearchCache() {
     String resource = "mybatis-config.xml";
     InputStream inputStream = null;
 
@@ -53,38 +54,38 @@ public class ResearchCache {
     sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
   }
 
-
   public static void main(String[] args) {
 
     ResearchCache researchCache = new ResearchCache();
 
     /**
-     * 结论: cache在一次sqlSession中(应该是一个事务中),是不会被插进cache里的(hashMap实现,所以不是线程安全)；
-     * 只有一个sqlSession Close之后，才会将查询的数据插入cache里；
+     * 结论: cache在一次sqlSession中(应该是一个事务中),是不会被插进cache里的(hashMap实现,所以不是线程安全)； 只有该sqlSession
+     * Close之后，才会将查询的数据插入cache里；
      */
-    researchCache.testCacheWithSignleSqlSession();
-    researchCache.testCacheWithOwnSqlSession();
+    //    researchCache.testCacheWithSignleSqlSession();
+    //    researchCache.testCacheWithOwnSqlSession();
 
-    //TODO 缓存查询: sqlSession 1:先查询,再更新(更新上次查询的数据); sqlSession 2: 单查询(条件跟1一样);
+    // TODO 缓存查询: sqlSession 1:先查询,再更新(更新上次查询的数据); sqlSession 2: 单查询(条件跟1一样);
+    researchCache.testCacheUpdateUsage();
   }
 
-
   /**
-   * 1. 可用来追踪mapper映射的源码;
-   * 2. 可用来追踪cache缓存的源码:
-   *    - 两次相同的查询，分别生成各种查询需要的sqlSession; in other words, sqlSession不共享
+   * COMPLETED
+   *
+   * <p>1. 可用来追踪mapper映射的源码; 2. 可用来追踪cache缓存的源码: - 两次相同的查询，分别生成各种查询需要的sqlSession; in other words,
+   * sqlSession不共享
    */
-  public void testCacheWithOwnSqlSession(){
+  public void testCacheWithOwnSqlSession() {
 
     SqlSession sqlSession = null;
 
-    /************    测试Mapping   ******************/
-    //1. sqlSession方式执行sql：
+    /** ********** 测试Mapping ***************** */
+    // 1. sqlSession方式执行sql：
     try {
       sqlSession = sqlSessionFactory.openSession();
       BusDO busDO1 =
-              sqlSession.selectOne(
-                      "com.cn.research.mybatis.generator.busDOMapper.selectByPrimaryKey", 1);
+          sqlSession.selectOne(
+              "com.cn.research.mybatis.generator.busDOMapper.selectByPrimaryKey", 1);
       System.out.println("sqlSession.selectOne result :" + busDO1.getBusName());
     } catch (Exception e) {
       e.printStackTrace();
@@ -92,7 +93,7 @@ public class ResearchCache {
       sqlSession.close();
     }
 
-    //2. 接口形式执行sql, 这里使用了cache
+    // 2. 接口形式执行sql, 这里使用了cache
     try {
       sqlSession = sqlSessionFactory.openSession();
       busDOMapper dao = sqlSession.getMapper(busDOMapper.class);
@@ -105,62 +106,79 @@ public class ResearchCache {
     } finally {
       sqlSession.close();
     }
-
   }
 
   /**
-   * 1. 研究cache的使用，查询 => 更新 => 查询  对应的cache变化:
+   * TODO 缓存查询: sqlSession 1:先查询,再更新(更新上次查询的数据); sqlSession 2: 单查询(条件跟1一样); 1. 研究cache的使用，查询 => 更新
+   * => 查询 对应的cache变化:
    */
-  public void testCacheUpdateUsage(){
-   SqlSession sqlSession = null;
+  public void testCacheUpdateUsage() {
+    SqlSession sqlSession = null;
+    busDOMapper dao = null;
 
+    /** ********** 第一次 查询 ***************** */
     sqlSession = sqlSessionFactory.openSession();
-    busDOMapper dao = sqlSession.getMapper(busDOMapper.class);
+    dao = sqlSession.getMapper(busDOMapper.class);
 
-    /************    测试Cache   ******************/
-
-    //select
     BusDO busDO = dao.selectByPrimaryKey(1);
     System.out.println("第一次查询: busDO is " + JSON.toJSONString(busDO));
+    sqlSession.close();
+//
+//    /** ********** 第二次 查询 ***************** */
+//    sqlSession = sqlSessionFactory.openSession();
+//    dao = sqlSession.getMapper(busDOMapper.class);
+//    // select
+//    BusDO busDO2 = dao.selectByPrimaryKey(1);
+//    System.out.println("第二次查询: busDO is " + JSON.toJSONString(busDO2));
+//    sqlSession.close();
 
-    //update
-//    busDO.setBusName("583路123");
-//    dao.updateByPrimaryKeySelective(busDO);
+    /** ********** 第一次 更新 ***************** */
+    sqlSession = sqlSessionFactory.openSession();
+    dao = sqlSession.getMapper(busDOMapper.class);
 
-    //select
-    BusDO busDO2 = dao.selectByPrimaryKey(1);
-    System.out.println("第二次查询: busDO is " + JSON.toJSONString(busDO2));
+    BusDO busDO3 = new BusDO();
+    busDO3.setBusName("583路");
+    busDO3.setCreateTime(new Date());
+    busDO3.setBusInfoId(1);
+    int a =dao.updateByPrimaryKeySelective(busDO3);
+    System.out.println(a);
+    sqlSession.close();
 
-
-
+    /** ********** 第三次 查询 ***************** */
+//    sqlSession = sqlSessionFactory.openSession();
+//    dao = sqlSession.getMapper(busDOMapper.class);
+//    //
+//    BusDO busDO4 = dao.selectByPrimaryKey(1);
+//    System.out.println("第三次查询: busDO is " + JSON.toJSONString(busDO4));
+//    sqlSession.close();
   }
 
-
   /**
-   * 1. cache研究：
-   * 两次相同的查询，共享一个SqlSession
+   * COMPLETED
+   *
+   * <p>1. cache研究： 两次相同的查询，共享一个SqlSession
    */
-  public void testCacheWithSignleSqlSession(){
+  public void testCacheWithSignleSqlSession() {
 
     SqlSession sqlSession = null;
 
-    /************    测试Mapping   ******************/
-    //1. sqlSession方式执行sql：
+    /** ********** 测试Mapping ***************** */
+    // 1. sqlSession方式执行sql：
     try {
       sqlSession = sqlSessionFactory.openSession();
       BusDO busDO1 =
-              sqlSession.selectOne(
-                      "com.cn.research.mybatis.generator.busDOMapper.selectByPrimaryKey", 1);
+          sqlSession.selectOne(
+              "com.cn.research.mybatis.generator.busDOMapper.selectByPrimaryKey", 1);
       System.out.println("sqlSession.selectOne result :" + busDO1.getBusName());
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
-//      sqlSession.close();
+      //      sqlSession.close();
     }
 
-    //2. 接口形式执行sql, 这里使用了cache
+    // 2. 接口形式执行sql, 这里使用了cache
     try {
-//      sqlSession = sqlSessionFactory.openSession();
+      //      sqlSession = sqlSessionFactory.openSession();
       busDOMapper dao = sqlSession.getMapper(busDOMapper.class);
       BusDO busDO = new BusDO();
       busDO.setBusName("asdasd");
@@ -171,7 +189,5 @@ public class ResearchCache {
     } finally {
       sqlSession.close();
     }
-
   }
-
 }

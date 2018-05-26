@@ -48,9 +48,13 @@ public class SimpleExecutor extends BaseExecutor {
       StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
       stmt = prepareStatement(handler, ms.getStatementLog());
       return handler.update(stmt);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return 0;
     } finally {
       closeStatement(stmt);
     }
+
   }
 
   @Override

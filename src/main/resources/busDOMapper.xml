@@ -100,17 +100,21 @@
     -->
     update bus_info
     <set>
-      <if test="createTime != null">
+      <!--bus_name = #{busName,jdbcType=VARCHAR},-->
+      <!--<if test="createTime != null">-->
         create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="modifyTime != null">
-        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="busName != null">
-        bus_name = #{busName,jdbcType=VARCHAR},
-      </if>
+      <!--</if>-->
+      <!--<if test="modifyTime != null">-->
+        <!--modify_time = #{modifyTime,jdbcType=TIMESTAMP},-->
+      <!--</if>-->
+      <!--<if test="busName != null">-->
+        <!--bus_name = #{busName,jdbcType=VARCHAR},-->
+      <!--</if>-->
     </set>
-    where bus_info_id = #{busInfoId,jdbcType=INTEGER}
+    where bus_name = #{busName,jdbcType=VARCHAR}
+    <!--bus_info_id = #{busInfoId,jdbcType=INTEGER}-->
   </update>
+
+  <!--第一次查询: busDO is {"busInfoId":1,"busName":"782路22","createTime":1525964298000,"modifyTime":1525964298000}-->
 
 </mapper>
