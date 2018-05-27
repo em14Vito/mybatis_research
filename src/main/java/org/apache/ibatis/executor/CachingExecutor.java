@@ -16,6 +16,7 @@ package org.apache.ibatis.executor;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.cache.TransactionalCacheManager;
@@ -115,6 +116,8 @@ public class CachingExecutor implements Executor {
         if (list == null) {
           list = delegate.<E>query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
           tcm.putObject(cache, key, list); // issue #578 and #116
+        } else {
+          System.out.println("use cached " + JSON.toJSONString(list));
         }
         return list;
       }

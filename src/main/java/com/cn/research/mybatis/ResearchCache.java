@@ -123,34 +123,40 @@ public class ResearchCache {
     BusDO busDO = dao.selectByPrimaryKey(1);
     System.out.println("第一次查询: busDO is " + JSON.toJSONString(busDO));
     sqlSession.close();
-//
-//    /** ********** 第二次 查询 ***************** */
-//    sqlSession = sqlSessionFactory.openSession();
-//    dao = sqlSession.getMapper(busDOMapper.class);
-//    // select
-//    BusDO busDO2 = dao.selectByPrimaryKey(1);
-//    System.out.println("第二次查询: busDO is " + JSON.toJSONString(busDO2));
-//    sqlSession.close();
+
+    /** ********** 第二次 查询 ***************** */
+    sqlSession = sqlSessionFactory.openSession();
+    dao = sqlSession.getMapper(busDOMapper.class);
+    BusDO busDO2 = dao.selectByPrimaryKey(2);
+    System.out.println("第二次查询: busDO is " + JSON.toJSONString(busDO2));
+    sqlSession.close();
 
     /** ********** 第一次 更新 ***************** */
     sqlSession = sqlSessionFactory.openSession();
     dao = sqlSession.getMapper(busDOMapper.class);
 
     BusDO busDO3 = new BusDO();
-    busDO3.setBusName("583路");
+    busDO3.setBusName("583");
     busDO3.setCreateTime(new Date());
     busDO3.setBusInfoId(1);
     int a =dao.updateByPrimaryKeySelective(busDO3);
-    System.out.println(a);
+    sqlSession.commit();
     sqlSession.close();
 
     /** ********** 第三次 查询 ***************** */
-//    sqlSession = sqlSessionFactory.openSession();
-//    dao = sqlSession.getMapper(busDOMapper.class);
-//    //
-//    BusDO busDO4 = dao.selectByPrimaryKey(1);
-//    System.out.println("第三次查询: busDO is " + JSON.toJSONString(busDO4));
-//    sqlSession.close();
+    sqlSession = sqlSessionFactory.openSession();
+    dao = sqlSession.getMapper(busDOMapper.class);
+    //
+    BusDO busDO4 = dao.selectByPrimaryKey(1);
+    System.out.println("第三次查询: busDO is " + JSON.toJSONString(busDO4));
+    sqlSession.close();
+
+    /** ********** 第四次 查询 ***************** */
+    sqlSession = sqlSessionFactory.openSession();
+    dao = sqlSession.getMapper(busDOMapper.class);
+    BusDO busDO5 = dao.selectByPrimaryKey(2);
+    System.out.println("第四次查询: busDO is " + JSON.toJSONString(busDO2));
+    sqlSession.close();
   }
 
   /**
