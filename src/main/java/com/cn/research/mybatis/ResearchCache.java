@@ -111,7 +111,8 @@ public class ResearchCache {
   /**
    * TODO 缓存查询: sqlSession 1:先查询,再更新(更新上次查询的数据); sqlSession 2: 单查询(条件跟1一样); 1. 研究cache的使用，查询 => 更新
    * => 查询 对应的cache变化:
-   */
+   * Conclusion:
+   *    */
   public void testCacheUpdateUsage() {
     SqlSession sqlSession = null;
     busDOMapper dao = null;
